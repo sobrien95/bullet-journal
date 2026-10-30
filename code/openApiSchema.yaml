@@ -1,0 +1,606 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Bullet Journal API
+  license:
+    name: GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.en.html
+tags:
+  - name: Items
+    description: Operations related to daily bullet journal entries, tasks, events, and notes.
+  - name: Collections
+    description: Operations related to user collections.
+  - name: CollectionItems
+    description: Operations for managing items nested inside specific collections.
+servers:
+  - url: http://localhost:5001
+    description: Local development server
+paths:
+  /items:
+    summary: Relates to Items in a user's Bullet Journal.
+    get: # /items?year=YYY&month=MM&day=DD
+      summary: Gets Items depending on the parameters. If day is present it gets items for one day. If day is null it gets items for the given year and month.
+      tags:
+        - Items
+      operationId: getItemsByDate
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 12
+        - name: day
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 31
+      responses:
+        "200":
+          $ref: "#/components/responses/ItemListResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        default:
+          $ref: "#/components/responses/default"
+    post: # /items
+      summary: Creates a new Item.
+      tags:
+        - Items
+      operationId: addItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreateRequest"
+      responses:
+        "201":
+          $ref: "#/components/responses/ItemResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        default:
+          $ref: "#/components/responses/default"
+  /items/{itemId}:
+    summary: Relates to a specific Item in a user's Bullet Journal.
+    parameters:
+      - in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Gets a specific Item's details.
+      tags:
+        - Items
+      operationId: getItemById
+      responses:
+        "200":
+          $ref: "#/components/responses/ItemResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    patch:
+      summary: Updates a specific Item.
+      tags:
+        - Items
+      operationId: updateItemById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/ItemResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    delete:
+      summary: Deletes a specific Item.
+      tags:
+        - Items
+      operationId: deleteItemById
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+  /collections:
+    summary: Relates to a user's Collections.
+    get:
+      summary: Gets a list of all Collections for the user.
+      tags:
+        - Collections
+      operationId: getCollections
+      responses:
+        "200":
+          $ref: "#/components/responses/CollectionListResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        default:
+          $ref: "#/components/responses/default"
+    post:
+      summary: Creates a new Collection under the user's ID.
+      tags:
+        - Collections
+      operationId: createCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionCreateRequest"
+      responses:
+        "201":
+          $ref: "#/components/responses/CollectionResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        default:
+          $ref: "#/components/responses/default"
+  /collections/{collectionId}:
+    summary: Relates to a specific Collection.
+    parameters:
+      - in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Gets a specific Collection's details.
+      tags:
+        - Collections
+      operationId: getCollection
+      responses:
+        "200":
+          $ref: "#/components/responses/CollectionResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    patch:
+      summary: Updates a specific Collection's details.
+      tags:
+        - Collections
+      operationId: updateCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/CollectionResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    delete:
+      summary: Deletes a specific Collection. The SQL DB handles cascade deletes for child items.
+      tags:
+        - Collections
+      operationId: deleteCollection
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+  /collections/{collectionId}/items:
+    summary: Relates to all CollectionItems in a specific colection.
+    parameters:
+      - in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Gets a list of all CollectionItems in a specific Collection.
+      tags:
+        - CollectionItems
+      operationId: getCollectionItems
+      responses:
+        "200":
+          $ref: "#/components/responses/CollectionItemListResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    post:
+      summary: Creates a new CollectionItem under the specified Collection.
+      tags:
+        - CollectionItems
+      operationId: createCollectionItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionItemCreateRequest"
+      responses:
+        "201":
+          $ref: "#/components/responses/CollectionItemResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+  /collections/{collectionId}/items/{itemId}:
+    summary: Relates to a specific CollectionItem in a collection.
+    parameters:
+      - in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: gets a specific CollectionItem.
+      tags:
+        - CollectionItems
+      operationId: getCollectionItem
+      responses:
+        "200":
+          $ref: "#/components/responses/CollectionItemResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    patch:
+      summary: Updates a specific CollectionItem.
+      tags:
+        - CollectionItems
+      operationId: updateCollectionItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionItemUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/CollectionItemResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+    delete:
+      summary: Deletes a specific CollectionItem.
+      tags:
+        - CollectionItems
+      operationId: deleteCollectionItem
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        default:
+          $ref: "#/components/responses/default"
+components:
+  schemas:
+    Item:
+      type: object
+      properties:
+        itemId:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        category:
+          type: string
+          enum: ["task", "event", "note"]
+        important:
+          type: boolean
+        complete:
+          type: boolean
+    ItemCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        category:
+          type: string
+          enum: ["task", "event", "note"]
+        important:
+          type: boolean
+      required:
+        - name
+        - year
+        - month
+        - category
+        - important
+    ItemUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        category:
+          type: string
+          enum: ["task", "event", "note"]
+        important:
+          type: boolean
+        complete:
+          type: boolean
+    ItemHistory:
+      type: object
+      properties:
+        itemHistoryId:
+          type: integer
+        itemId:
+          type: integer
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        statusAtTime:
+          type: string
+          enum: ["created", "completed", "rolled_over", "future"]
+    Collection:
+      type: object
+      properties:
+        collectionId:
+          type: integer
+        userId:
+          type: integer
+        collectionName:
+          type: string
+        index:
+          type: integer
+    CollectionCreateRequest:
+      type: object
+      properties:
+        collectionName:
+          type: string
+      required:
+        - collectionName
+    CollectionUpdateRequest:
+      type: object
+      properties:
+        collectionName:
+          type: string
+        index:
+          type: integer
+    CollectionItem:
+      type: object
+      properties:
+        collectionItemId:
+          type: integer
+        collectionId:
+          type: integer
+        collectionItemName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        index:
+          type: integer
+    CollectionItemCreateRequest:
+      type: object
+      properties:
+        collectionItemName:
+          type: string
+      required:
+        - collectionItemName
+    CollectionItemUpdateRequest:
+      type: object
+      properties:
+        collectionItemName:
+          type: string
+        index:
+          type: integer
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        username:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+  responses:
+    # Success Responses
+    ItemResponse:
+      description: Succesful operation returning an Item.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Item"
+    ItemListResponse:
+      description: Succesful operation returning a list of Items.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Item"
+    CollectionResponse:
+      description: Succesful operation returning a Collection.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Collection"
+    CollectionListResponse:
+      description: Succesful operation returning a list of Collections.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Collection"
+    CollectionItemResponse:
+      description: Succesful operation returning a CollectionItem.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CollectionItem"
+    CollectionItemListResponse:
+      description: Succesful operation returning a list of CollectionItems.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/CollectionItem"
+    "204":
+      description: Resource deleted successfully.
+
+    # Error Responses
+    default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    "400":
+      description: Bad request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    "401":
+      description: Authorization information is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    "403":
+      description: Forbidden.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    "404":
+      description: An object with the specified ID was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

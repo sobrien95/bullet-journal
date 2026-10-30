@@ -1,0 +1,1091 @@
+openapi: 3.0.0
+info:
+  license:
+    name: GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.en.html
+  title: Bullet Journal API
+  version: 1.0.0
+servers:
+- description: Local development server
+  url: http://localhost:5001
+tags:
+- description: "Operations related to daily bullet journal entries, tasks, events,\
+    \ and notes."
+  name: Items
+- description: Operations related to user collections.
+  name: Collections
+- description: Operations for managing items nested inside specific collections.
+  name: CollectionItems
+paths:
+  /items:
+    get:
+      operationId: getItemsByDate
+      parameters:
+      - explode: true
+        in: query
+        name: year
+        required: true
+        schema:
+          format: int32
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: month
+        required: true
+        schema:
+          format: int32
+          maximum: 12
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: day
+        required: false
+        schema:
+          format: int32
+          maximum: 31
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Item"
+                type: array
+          description: Succesful operation returning a list of Items.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Gets Items depending on the parameters. If day is present it gets items
+        for one day. If day is null it gets items for the given year and month.
+      tags:
+      - Items
+      x-eov-operation-handler: controllers/ItemsController
+    post:
+      operationId: addItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreateRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+          description: Succesful operation returning an Item.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Creates a new Item.
+      tags:
+      - Items
+      x-eov-operation-handler: controllers/ItemsController
+    summary: Relates to Items in a user's Bullet Journal.
+  /items/{itemId}:
+    delete:
+      operationId: deleteItemById
+      parameters:
+      - explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: Resource deleted successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Deletes a specific Item.
+      tags:
+      - Items
+      x-eov-operation-handler: controllers/ItemsController
+    get:
+      operationId: getItemById
+      parameters:
+      - explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+          description: Succesful operation returning an Item.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Gets a specific Item's details.
+      tags:
+      - Items
+      x-eov-operation-handler: controllers/ItemsController
+    patch:
+      operationId: updateItemById
+      parameters:
+      - explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemUpdateRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+          description: Succesful operation returning an Item.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Updates a specific Item.
+      tags:
+      - Items
+      x-eov-operation-handler: controllers/ItemsController
+    summary: Relates to a specific Item in a user's Bullet Journal.
+  /collections:
+    get:
+      operationId: getCollections
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Collection"
+                type: array
+          description: Succesful operation returning a list of Collections.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Gets a list of all Collections for the user.
+      tags:
+      - Collections
+      x-eov-operation-handler: controllers/CollectionsController
+    post:
+      operationId: createCollection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionCreateRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+          description: Succesful operation returning a Collection.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Creates a new Collection under the user's ID.
+      tags:
+      - Collections
+      x-eov-operation-handler: controllers/CollectionsController
+    summary: Relates to a user's Collections.
+  /collections/{collectionId}:
+    delete:
+      operationId: deleteCollection
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: Resource deleted successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Deletes a specific Collection. The SQL DB handles cascade deletes for
+        child items.
+      tags:
+      - Collections
+      x-eov-operation-handler: controllers/CollectionsController
+    get:
+      operationId: getCollection
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+          description: Succesful operation returning a Collection.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Gets a specific Collection's details.
+      tags:
+      - Collections
+      x-eov-operation-handler: controllers/CollectionsController
+    patch:
+      operationId: updateCollection
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionUpdateRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+          description: Succesful operation returning a Collection.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Updates a specific Collection's details.
+      tags:
+      - Collections
+      x-eov-operation-handler: controllers/CollectionsController
+    summary: Relates to a specific Collection.
+  /collections/{collectionId}/items:
+    get:
+      operationId: getCollectionItems
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CollectionItem"
+                type: array
+          description: Succesful operation returning a list of CollectionItems.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Gets a list of all CollectionItems in a specific Collection.
+      tags:
+      - CollectionItems
+      x-eov-operation-handler: controllers/CollectionItemsController
+    post:
+      operationId: createCollectionItem
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionItemCreateRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollectionItem"
+          description: Succesful operation returning a CollectionItem.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Creates a new CollectionItem under the specified Collection.
+      tags:
+      - CollectionItems
+      x-eov-operation-handler: controllers/CollectionItemsController
+    summary: Relates to all CollectionItems in a specific colection.
+  /collections/{collectionId}/items/{itemId}:
+    delete:
+      operationId: deleteCollectionItem
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: Resource deleted successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Deletes a specific CollectionItem.
+      tags:
+      - CollectionItems
+      x-eov-operation-handler: controllers/CollectionItemsController
+    get:
+      operationId: getCollectionItem
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollectionItem"
+          description: Succesful operation returning a CollectionItem.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: gets a specific CollectionItem.
+      tags:
+      - CollectionItems
+      x-eov-operation-handler: controllers/CollectionItemsController
+    patch:
+      operationId: updateCollectionItem
+      parameters:
+      - explode: false
+        in: path
+        name: collectionId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: itemId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionItemUpdateRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollectionItem"
+          description: Succesful operation returning a CollectionItem.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Authorization information is missing or invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: An object with the specified ID was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unexpected error
+      summary: Updates a specific CollectionItem.
+      tags:
+      - CollectionItems
+      x-eov-operation-handler: controllers/CollectionItemsController
+    summary: Relates to a specific CollectionItem in a collection.
+components:
+  responses:
+    ItemResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Item"
+      description: Succesful operation returning an Item.
+    ItemListResponse:
+      content:
+        application/json:
+          schema:
+            items:
+              $ref: "#/components/schemas/Item"
+            type: array
+      description: Succesful operation returning a list of Items.
+    CollectionResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Collection"
+      description: Succesful operation returning a Collection.
+    CollectionListResponse:
+      content:
+        application/json:
+          schema:
+            items:
+              $ref: "#/components/schemas/Collection"
+            type: array
+      description: Succesful operation returning a list of Collections.
+    CollectionItemResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CollectionItem"
+      description: Succesful operation returning a CollectionItem.
+    CollectionItemListResponse:
+      content:
+        application/json:
+          schema:
+            items:
+              $ref: "#/components/schemas/CollectionItem"
+            type: array
+      description: Succesful operation returning a list of CollectionItems.
+    "204":
+      description: Resource deleted successfully.
+    default:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Unexpected error
+    "400":
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Bad request.
+    "401":
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Authorization information is missing or invalid.
+    "403":
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Forbidden.
+    "404":
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: An object with the specified ID was not found.
+  schemas:
+    Item:
+      example:
+        itemId: 0
+        userId: 6
+        name: name
+        year: 1
+        month: 5
+        day: 5
+        category: task
+        important: true
+        complete: true
+      properties:
+        itemId:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        category:
+          enum:
+          - task
+          - event
+          - note
+          type: string
+        important:
+          type: boolean
+        complete:
+          type: boolean
+      type: object
+    ItemCreateRequest:
+      example:
+        name: name
+        year: 0
+        month: 6
+        day: 1
+        category: task
+        important: true
+      properties:
+        name:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        category:
+          enum:
+          - task
+          - event
+          - note
+          type: string
+        important:
+          type: boolean
+      required:
+      - category
+      - important
+      - month
+      - name
+      - year
+      type: object
+    ItemUpdateRequest:
+      example:
+        name: name
+        year: 0
+        month: 6
+        day: 1
+        category: task
+        important: true
+        complete: true
+      properties:
+        name:
+          type: string
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        category:
+          enum:
+          - task
+          - event
+          - note
+          type: string
+        important:
+          type: boolean
+        complete:
+          type: boolean
+      type: object
+    ItemHistory:
+      properties:
+        itemHistoryId:
+          type: integer
+        itemId:
+          type: integer
+        year:
+          type: integer
+        month:
+          type: integer
+        day:
+          type: integer
+        statusAtTime:
+          enum:
+          - created
+          - completed
+          - rolled_over
+          - future
+          type: string
+      type: object
+    Collection:
+      example:
+        collectionId: 0
+        userId: 6
+        collectionName: collectionName
+        index: 1
+      properties:
+        collectionId:
+          type: integer
+        userId:
+          type: integer
+        collectionName:
+          type: string
+        index:
+          type: integer
+      type: object
+    CollectionCreateRequest:
+      example:
+        collectionName: collectionName
+      properties:
+        collectionName:
+          type: string
+      required:
+      - collectionName
+      type: object
+    CollectionUpdateRequest:
+      example:
+        collectionName: collectionName
+        index: 0
+      properties:
+        collectionName:
+          type: string
+        index:
+          type: integer
+      type: object
+    CollectionItem:
+      example:
+        collectionItemId: 0
+        collectionId: 6
+        collectionItemName: collectionItemName
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        index: 1
+      properties:
+        collectionItemId:
+          type: integer
+        collectionId:
+          type: integer
+        collectionItemName:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        index:
+          type: integer
+      type: object
+    CollectionItemCreateRequest:
+      example:
+        collectionItemName: collectionItemName
+      properties:
+        collectionItemName:
+          type: string
+      required:
+      - collectionItemName
+      type: object
+    CollectionItemUpdateRequest:
+      example:
+        collectionItemName: collectionItemName
+        index: 0
+      properties:
+        collectionItemName:
+          type: string
+        index:
+          type: integer
+      type: object
+    User:
+      properties:
+        userId:
+          type: integer
+        email:
+          format: email
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        username:
+          type: string
+      type: object
+    Error:
+      example:
+        code: code
+        message: message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+      type: object
